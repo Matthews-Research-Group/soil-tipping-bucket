@@ -1,0 +1,57 @@
+# WARNING: The .Rbuildignore syntax has no way to indicate a comment, so all the
+# lines in this file that begin with `#` are actually commands to exclude files
+# with peculiar names that include substrings like `# subdirectories.`. For this
+# reason, there should not be any blank comment lines, because they would
+# exclude any files with `#` in the filename, possibly causing confusing issues.
+
+^.*\.Rproj$
+# Designates the directory as an RStudio Project.
+
+^\.Rproj\.user$
+# Used by RStudio for temporary files.
+
+/\.RData
+# Only a root level .RData file is ignored by default.
+
+^vignettes/.*\.aux$
+^vignettes/.*\.log$
+^vignettes/.*\.out$
+^vignettes/.*\.tex$
+^vignettes/.*\.toc$
+# Vignette-build by-products
+
+^src/framework/.clang-format$
+^src/framework/.editorconfig$
+^src/framework/.git$
+# Files from the `framework` submodule
+
+^vignettes/[^/]*\.pdf$
+^vignettes/figure$
+# Only exclude PDFs in the vignettes directory itself, not those in
+# subdirectories.
+
+^.*\.gz$
+# If these files occur only as by-products of building vignettes, this could be
+# made more specific: ^vignettes/.*\.gz
+
+^tags$
+# Not sure what produces these files.
+
+^\.github$
+# GitHub actions and workflows.
+
+^src/.*\.o$
+^src/.*\.so$
+^src/.*\.dll$
+# C++ build by-products.
+
+^\.clang-format$
+^\.editorconfig$
+^skelBML_description$
+^skelBML_license\.md$
+^docs$
+^script$
+# Other files related to package development.
+
+^LICENSE\.md$
+# Required to be in the repository but not allowed on CRAN
