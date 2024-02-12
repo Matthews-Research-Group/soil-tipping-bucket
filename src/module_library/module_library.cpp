@@ -19,6 +19,6 @@ creator_map BioCroWater::module_library::library_entries =
     {"soil_type_selector", &create_mc<soil_type_selector>},
     {"soil_water_downflow", &create_mc<soil_water_downflow>},
     {"soil_water_tiledrain", &create_mc<soil_water_tiledrain>},
-    {"soil_water_upflow", &create_mc<soil_water_tiledrain>},
+    {"soil_water_upflow", &create_mc<soil_water_upflow>},
     {"multilayer_soil_profile_avg", &create_mc<multilayer_soil_profile_avg>}
 };
