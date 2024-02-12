@@ -2,9 +2,9 @@
 
 \alias{module_library}
 
-\alias{BioCroWaterPotential}
+\alias{BioCroWater}
 
-\title{BioCroWaterPotential}
+\title{BioCroWater}
 
 \description{
   This R package represents a collection of BioCro modules. It is not intended

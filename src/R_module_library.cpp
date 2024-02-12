@@ -13,7 +13,7 @@
 #include "R_module_library.h"
 
 using std::string;
-using library = BioCroWaterPotential::module_library;
+using library = BioCroWater::module_library;
 
 extern "C" {
 

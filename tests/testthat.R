@@ -3,5 +3,5 @@ library(testthat)
 library(BioCro)
 
 # Load this package and test it
-library(BioCroWaterPotential)
-test_check('BioCroWaterPotential')
+library(BioCroWater)
+test_check('BioCroWater')

@@ -10,7 +10,7 @@
 #include "skeleton_version.h"
 
 using std::string;
-using BioCroWaterPotential::skeleton_version;
+using BioCroWater::skeleton_version;
 
 extern "C" {
 /**

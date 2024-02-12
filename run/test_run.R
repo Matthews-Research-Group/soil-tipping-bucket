@@ -1,5 +1,5 @@
 library(BioCro)
-library(BioCroWaterPotential)
+library(BioCroWater)
 
 #Yufeng: I made up some of these values.
 input_list = list(canopy_temperature = 298,      #Kelvin
@@ -11,4 +11,4 @@ input_list = list(canopy_temperature = 298,      #Kelvin
                   water_density      = 1000,            #kg/m3
                   structural_dry_matter_fraction = 0.05 #kg/(m^2 ground)
                   )
-output_list = evaluate_module("BioCroWaterPotential:canopy_potential",input_list)
+output_list = evaluate_module("BioCroWater:canopy_potential",input_list)

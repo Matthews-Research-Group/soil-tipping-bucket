@@ -1,4 +1,4 @@
-## BioCroWaterPotential
+## BioCroWater
 PUT AN OVERVIEW OF THE MODULE LIBRARY HERE
 
 ### Installation
@@ -27,18 +27,18 @@ either of two methods:
 
 After obtaining a local copy of the source code, install the package from the
 command line or from within R using one of the following sets of commands. These
-assume that the source files are in a directory named  'BioCroWaterPotential'.
+assume that the source files are in a directory named  'BioCroWater'.
 
 - From the command line
 ```
 cd path_to_unzipped_directory
-R CMD INSTALL BioCroWaterPotential
+R CMD INSTALL BioCroWater
 ```
 
 - Or from within R
 ```
 setwd('path_to_unzipped_directory')
-install.packages('BioCroWaterPotential', repos=NULL, type='SOURCE')
+install.packages('BioCroWater', repos=NULL, type='SOURCE')
 ```
 
 ### An example
@@ -48,10 +48,10 @@ return information about one of them (`example_module`), and then run that
 module:
 ```
 library(BioCro)
-library(BioCroWaterPotential)
-get_all_modules('BioCroWaterPotential')
-module_info('BioCroWaterPotential:example_module')
-evaluate_module('BioCroWaterPotential:example_module', list(A = 1, B = 2))
+library(BioCroWater)
+get_all_modules('BioCroWater')
+module_info('BioCroWater:example_module')
+evaluate_module('BioCroWater:example_module', list(A = 1, B = 2))
 ```
 For more information about using BioCro modules in R, please see the
 [BioCro framework R package](https://github.com/biocro/biocro).
@@ -65,7 +65,7 @@ library that was used.
 
 ### License
 
-The `BioCroWaterPotential` R package is licensed under the MIT license, while the BioCro C++
+The `BioCroWater` R package is licensed under the MIT license, while the BioCro C++
 framework is licensed under version 3 or greater of the GNU Lesser General
 Public License (LGPL). This scheme allows people to freely develop models for
 any use (public or private) under the MIT license, but any changes to the

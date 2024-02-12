@@ -4,7 +4,7 @@
 #include "../framework/module.h"
 #include "../framework/state_map.h"
 
-namespace standardBML
+namespace BioCroWater 
 {
 /**
  * @class soil_surface_runoff
@@ -217,5 +217,5 @@ void soil_surface_runoff::do_operation() const
     update(available_water_op, available_water);
 }
 
-}  // namespace standardBML
+}  // namespace BioCroWater 
 #endif

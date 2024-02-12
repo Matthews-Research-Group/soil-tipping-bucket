@@ -5,7 +5,7 @@
 #include "../framework/state_map.h"
 #include "soil_water_flow_functions.h"
 
-namespace standardBML
+namespace BioCroWater 
 {
 /**
  * @class soil_water_downflow
@@ -324,5 +324,5 @@ void soil_water_tiledrain::do_operation() const
     update(deltaT_6_op, tileDrain.sw_delta_T[5]);
 }
 
-}  // namespace standardBML
+}  // namespace BioCroWater 
 #endif
