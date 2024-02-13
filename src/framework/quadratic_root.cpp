@@ -5,7 +5,6 @@
 #include "quadratic_root.h"
 
 using calculation_constants::eps_zero;
-using std::abs;
 using std::logic_error;
 using std::max;
 using std::min;
@@ -67,7 +66,7 @@ double quadratic_root(
     double c,
     quadratic_root_type root_type)
 {
-    if (abs(a) < eps_zero) {
+    if (std::abs(a) < eps_zero) {
         return -c / b;
     } else {
         double const root_term = b * b - 4 * a * c;

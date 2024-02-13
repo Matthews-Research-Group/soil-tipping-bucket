@@ -1,4 +1,4 @@
 [submodule "src/framework"]
 	path = src/framework
-	url = https://github.com/biocro/framework
+	url = git@github.com:biocro/framework.git
 	branch = main
