@@ -328,7 +328,7 @@ void soil_evaporation::do_operation() const
         lai,
         wet_soil_albedo   
     );
-    Rprintf("potential_et is: %f (MJ/m2/hr)\n", potential_et);
+//    //Rprintf("potential_et is: %f (MJ/m2/hr)\n", potential_et);
     
     // Reference Height computation
     double reference_et = reference_evapotranspiration(
@@ -341,7 +341,7 @@ void soil_evaporation::do_operation() const
         rh,
         wet_soil_albedo
     );
-    Rprintf("reference_et is: %f (MJ/m2/hr)\n", reference_et);
+//    //Rprintf("reference_et is: %f (MJ/m2/hr)\n", reference_et);
     
     double potential_soil_evap = potential_soil_evaporation(
         skc,
@@ -352,7 +352,7 @@ void soil_evaporation::do_operation() const
         potential_et,
         reference_et
     );
-    Rprintf("potential_soil_evap is: %f (MJ/m2/hr)\n", potential_soil_evap);
+//    //Rprintf("potential_soil_evap is: %f (MJ/m2/hr)\n", potential_soil_evap);
     // SPAM.for line 353
     if (potential_soil_evap  > 1e-6){
         // Rprintf("potential_soil_evap is: %f (MJ/m2/hr)\n", potential_soil_evap);
@@ -371,7 +371,7 @@ void soil_evaporation::do_operation() const
         // CALL ESUP(EOS, SUMES1, SUMES2, U, ES, T)  !Supplementary calcs
         
         if ((sumes1 >= evap_limit) && (infiltrated_water >= sumes2)) {
-            Rprintf("case 1: sumes 1 >= evap_limit and winf >= sumes2 \n");
+//            Rprintf("case 1: sumes 1 >= evap_limit and winf >= sumes2 \n");
             // Stage 1 Evaporation
             double temp_wat_infil = infiltrated_water - sumes2; // Interim value of WINF, water available for infiltration (mm)
             sumes1_temp = evap_limit - temp_wat_infil;
@@ -391,10 +391,10 @@ void soil_evaporation::do_operation() const
             sumes2_temp = evap_comp.sumes2;
             time_factor_temp = evap_comp.time_factor;
             actual_soil_evap = evap_comp.actual_soil_evap;
-            Rprintf("Case 1: Actual soil evap is: %f \n", actual_soil_evap);
+//            Rprintf("Case 1: Actual soil evap is: %f \n", actual_soil_evap);
         }
         else if ((sumes1 >= evap_limit) && (infiltrated_water < sumes2)) {
-            Rprintf("case 2: sumes 1 >= U and winf < sumes2 \n");
+            //Rprintf("case 2: sumes 1 >= U and winf < sumes2 \n");
             // Stage 2 Evaporation
             time_factor_temp = time_factor + 1.0;
             actual_soil_evap = 3.5 * pow(time_factor_temp, 0.5) - sumes2;
@@ -409,10 +409,10 @@ void soil_evaporation::do_operation() const
             }
             sumes2_temp = sumes2 + actual_soil_evap - infiltrated_water;
             time_factor_temp = pow((sumes2_temp/3.5), 2);
-            Rprintf("Case 2: Actual soil evap is: %f \n", actual_soil_evap);
+            //Rprintf("Case 2: Actual soil evap is: %f \n", actual_soil_evap);
         }
         else if (infiltrated_water >= sumes1) {
-            Rprintf("case 3: winf >= sumes1 \n");
+            //Rprintf("case 3: winf >= sumes1 \n");
             // Stage 1 evaporation
             sumes1_temp = 0.0;
             // CALL ESUP(EOS, SUMES1, SUMES2, U, ES, T)  !Supplementary calcs
@@ -428,10 +428,10 @@ void soil_evaporation::do_operation() const
             sumes2_temp = evap_comp.sumes2;
             time_factor_temp = evap_comp.time_factor;
             actual_soil_evap = evap_comp.actual_soil_evap;
-              Rprintf("Case 3: Actual soil evap is: %f \n", actual_soil_evap);
+              //Rprintf("Case 3: Actual soil evap is: %f \n", actual_soil_evap);
         }
         else {
-            Rprintf("case 4: else \n");
+            //Rprintf("case 4: else \n");
             // Stage 1 evaporation
             sumes1_temp = sumes1 - infiltrated_water;
             // CALL ESUP(EOS, SUMES1, SUMES2, U, ES, T)  !Supplementary calcs
@@ -447,7 +447,7 @@ void soil_evaporation::do_operation() const
             sumes2_temp = evap_comp.sumes2;
             time_factor_temp = evap_comp.time_factor;
             actual_soil_evap = evap_comp.actual_soil_evap;
-              Rprintf("Case 4: Actual soil evap is: %f \n", actual_soil_evap);
+              //Rprintf("Case 4: Actual soil evap is: %f \n", actual_soil_evap);
         }
   // -----------------------------------------------------------------------      
   //    Soil evaporation can not be larger than the current extractable soil
