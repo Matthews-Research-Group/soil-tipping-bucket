@@ -137,10 +137,10 @@ double reference_evapotranspiration(
     // ASCE (2005) Table 1
     // Tall reference crop (50-cm alfalfa) for hourly during daytime
     double Cn = 66.0; // K mm s^3 Mg^-1 d^-1
-    double Cd = 0.25; //s m^-1
+    double Cd = 0.95; //s m^-1 (0.25 (day) - 1.7 (night) mm/hour)
 
     // Standardized reference evapotranspiration, ASCE (2005) Eq. 1
-    double reference_et =0.408 * udelta * (rn-g)+ psychrometric_const *
+    double reference_et = 0.408 * udelta * (rn-g)+ psychrometric_const *
                         (Cn/(tavg+273.0)) * wind2m * (sat_vap_pressure - ea);
     reference_et = reference_et/(udelta+psychrometric_const*(1.0+Cd*wind2m)); //mm/hr
     reference_et = max(0.0001, reference_et);
