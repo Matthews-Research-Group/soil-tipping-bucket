@@ -26,6 +26,7 @@ class multi_layer_soil_profile : public differential_module
           // soil_reflectance{get_input(input_quantities, "soil_reflectance")}, //Albedo
           soil_evaporation_rate{get_input(input_quantities, "soil_evaporation_rate")},
           surface_runoff{get_input(input_quantities, "surface_runoff")},
+          et{get_input(input_quantities, "et")},
           
           // Parameters for layer 1
           soil_depth_1{get_input(input_quantities, "soil_depth_1")},
@@ -89,6 +90,7 @@ class multi_layer_soil_profile : public differential_module
     // double const& soil_reflectance;
     double const& soil_evaporation_rate;
     double const& surface_runoff;
+    double const& et;
 
     // Parameters for layer 1
     double const& soil_depth_1;
@@ -150,6 +152,7 @@ string_vector multi_layer_soil_profile::get_inputs()
       // "soil_reflectance",
       "soil_evaporation_rate", // Mg/ha/hr
       "surface_runoff",
+      "et",
 
       "soil_depth_1",
       "soil_water_content_1",
@@ -245,14 +248,18 @@ void multi_layer_soil_profile::do_operation() const
     double delta_soil_water_content[nlayers];
 
     for (int l = 0; l < nlayers; l++){
-        delta_soil_water_content[l] = swdeltS[l] + swdeltU[l] + swdeltT[l];
+        if(l<4){
+          delta_soil_water_content[l] = swdeltS[l] + swdeltU[l] + swdeltT[l] - et*0.1 /(10*45);
+        }else{
+          delta_soil_water_content[l] = swdeltS[l] + swdeltU[l] + swdeltT[l]; 
+	}
     }
     // kg / m^2 / s
-    double soil_evap = soil_evaporation_rate/ 10.0; // mm/hr to cm/hr
+    // double soil_evap = soil_evaporation_rate/ 10.0; // mm/hr to cm/hr
     // remove soil evaporation from first layer, but don't let water content go
     // negative. This is a crude, and hopefully temporary, fix. -mlm
     delta_soil_water_content[0] = delta_soil_water_content[0]
-                                  - 0.1 * soil_evap / soil_depth[0];
+                                  - 0.1 * soil_evaporation_rate / soil_depth[0];
     if (soil_water_content[0] + delta_soil_water_content[0] < 0) {
         delta_soil_water_content[0] = -soil_water_content[0];
     }
