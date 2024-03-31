@@ -104,6 +104,8 @@ for (i in 1:length(years)){
 # stop()
 
 #plotting
+# Open a PDF device with custom size
+pdf("myplot.pdf", width = 8, height = 6)  # Width: 8 inches, Height: 6 inches
 par(mfrow=c(2,2),mar=c(4,4,3,3),mai=c(1,1,0.5,0.5),cex=1.5) #c(bottom, left, top, right)
 for (i in 1:4){
   year   = years[i]
@@ -136,7 +138,10 @@ for (i in 1:4){
   # lines(result$time,result$soil_evaporation_rate/2,col="blue")
 }
 
-stop()
+dev.off()
+
+stop("stopped here")
+
 #single layer
 par(mfrow=c(2,2),mar=c(4,4,3,3),mai=c(1,1,0.5,0.5),cex=1.5) #c(bottom, left, top, right)
 layer_name = "soil_water_content_2"
