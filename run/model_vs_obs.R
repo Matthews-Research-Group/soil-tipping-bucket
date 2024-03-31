@@ -10,7 +10,7 @@ results = list()
 for (i in 1:length(years)){
   year = years[i]
   weatherData <- 
-    read.csv(paste0("/Users/yufeng/Desktop/UIUC/Research/Soybean-Sensitivity/Sensitivity_run/WeatherData/",year,"/",year,"_Bondville_IL_daylength.csv"))
+    read.csv(paste0("WeatherData/",year,"/",year,"_Bondville_IL_daylength.csv"))
   weather_growing_season <- get_growing_season_climate(weatherData, threshold_temperature = 0)
   weather_growing_season$time_zone_offset = -6
   
