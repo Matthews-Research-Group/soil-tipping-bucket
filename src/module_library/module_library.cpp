@@ -11,6 +11,7 @@
 #include "soil_water_upflow.h"
 #include "multi_layer_soil_profile.hpp"
 #include "multilayer_soil_profile_avg.hpp"
+#include "soil_water_uptake.h"
 
 creator_map BioCroWater::module_library::library_entries =
 {
@@ -22,5 +23,6 @@ creator_map BioCroWater::module_library::library_entries =
     {"soil_water_tiledrain", &create_mc<soil_water_tiledrain>},
     {"soil_water_upflow", &create_mc<soil_water_upflow>},
     {"multi_layer_soil_profile", &create_mc<multi_layer_soil_profile>},
-    {"multilayer_soil_profile_avg", &create_mc<multilayer_soil_profile_avg>}
+    {"multilayer_soil_profile_avg", &create_mc<multilayer_soil_profile_avg>},
+    {"soil_water_uptake", &create_mc<soil_water_uptake>}
 };
