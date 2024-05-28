@@ -23,6 +23,8 @@ class multilayer_soil_profile_avg : public direct_module
 
           // Get references to input quantities
 
+          max_rooting_layer{get_input(input_quantities, "max_rooting_layer")},
+
           // Inputs for layer 1
           soil_depth_1{get_input(input_quantities, "soil_depth_1")},
           soil_water_content_1{get_input(input_quantities, "soil_water_content_1")},
@@ -87,6 +89,8 @@ class multilayer_soil_profile_avg : public direct_module
    private:
     // References to input quantities
 
+    double const& max_rooting_layer;
+
     // Parameters for layer 1
     double const& soil_depth_1;
     double const& soil_water_content_1;
@@ -149,6 +153,8 @@ class multilayer_soil_profile_avg : public direct_module
 string_vector multilayer_soil_profile_avg::get_inputs()
 {
   return {
+
+      "max_rooting_layer",
       
       "soil_depth_1",
       "soil_water_content_1",
@@ -207,7 +213,6 @@ string_vector multilayer_soil_profile_avg::get_outputs()
 
 void multilayer_soil_profile_avg::do_operation() const
 {
-    int nlayers = 6;
     double soil_depth_arr[] = {
         soil_depth_1,
         soil_depth_2,
@@ -257,13 +262,13 @@ void multilayer_soil_profile_avg::do_operation() const
         soil_wilting_point_6};     
                
     // total soil depth - first four layers for Miscanthus roots (30-45cm)
-    double total_soil_depth = 0.0;
-    int total_number_of_layers = 0;
-    double max_depth = 45.0;
-    while (total_soil_depth <= max_depth) {
-      total_soil_depth += soil_depth_arr[total_number_of_layers];
-      total_number_of_layers += 1;
-    }
+    // double total_soil_depth = 0.0;
+    // int total_number_of_layers = 0;
+    // double max_depth = 45.0;
+    // while (total_soil_depth <= max_depth) {
+      // total_soil_depth += soil_depth_arr[total_number_of_layers];
+      // total_number_of_layers += 1;
+    // }
     double tot_soil_depth = 0.0;
     double tot_soil_water_content = 0.0;
     double tot_soil_saturated_conductivity = 0.0;
@@ -271,7 +276,7 @@ void multilayer_soil_profile_avg::do_operation() const
     double tot_soil_field_capacity = 0.0;
     double tot_soil_wilting_point = 0.0;
 
-    for (int l = 0; l <= total_number_of_layers; l++){
+    for (int l = 0; l < max_rooting_layer; l++){
         tot_soil_depth += soil_depth_arr[l];
         tot_soil_water_content += soil_water_content_arr[l]*soil_depth_arr[l];
         tot_soil_saturated_conductivity += soil_saturated_conductivity_arr[l]*soil_depth_arr[l];
