@@ -85,14 +85,14 @@ for (i in 1:length(years)) {
                              soybean_solver_params)
 
   ExpBiomass[[i]] <- read.csv(file=paste0('Data/biomasses_with_seed/',yr,'_ambient_biomass.csv'))
-  colnames(ExpBiomass[[i]])<-c("DOY","Leaf","Stem","Shell0","Seed")
+  colnames(ExpBiomass[[i]])<-c("DOY","Leaf","Stem","Shell0","Seed","Litter","CumLitter")
   Shell = ExpBiomass[[i]]$Shell0 - ExpBiomass[[i]]$Seed
 #  Shell[which.max(Shell):length(Shell)] = max(Shell) #make Shell not decline
   ExpBiomass[[i]]$Shell = Shell 
 
   
   ExpBiomass.std[[i]] <- read.csv(file=paste0('Data/biomasses_with_seed/',yr,'_ambient_biomass_std.csv'))
-  colnames(ExpBiomass.std[[i]])<-c("DOY","Leaf","Stem","Shell0","Seed")
+  colnames(ExpBiomass.std[[i]])<-c("DOY","Leaf","Stem","Shell0","Seed","Litter","CumLitter")
   ExpBiomass.std[[i]]$Shell = sqrt((ExpBiomass.std[[i]]$Shell0)^2 + (ExpBiomass.std[[i]]$Seed)^2)
   
   RootVals[[i]] <- data.frame("DOY"=ExpBiomass[[i]]$DOY[5], "Root"=0.17*sum(ExpBiomass[[i]][5,2:4])) # See Ordonez et al. 2020, https://doi.org/10.1016/j.eja.2020.126130
@@ -104,13 +104,23 @@ for (i in 1:length(years)) {
 }
 
 plot_list = list()
+plot_list_litter = list()
 for (i in 1:length(years)){
 	yr = years[i]
 	FigA <- plot_all_tissues_TWO(results_CTL[[i]],results[[i]], yr, ExpBiomass[[i]], ExpBiomass.std[[i]])
 	plot_list[[i]] = FigA
+
+	FigB <- plot_litters(results_CTL[[i]],yr, ExpBiomass[[i]], ExpBiomass.std[[i]])
+	plot_list_litter[[i]] = FigB
 }
+
 pdf_name = paste0("figs/fig_",opt_result_name,".pdf")
 pdf(pdf_name,height = 8, width=8,bg='transparent')
 grid.arrange(grobs = plot_list,nrow=2,ncol=2)
 dev.off()
 
+#litter biomass plot
+pdf_name = paste0("figs/fig_",opt_result_name,"_litter.pdf")
+pdf(pdf_name,height = 8, width=8,bg='transparent')
+grid.arrange(grobs = plot_list_litter,nrow=2,ncol=2)
+dev.off()
