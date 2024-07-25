@@ -1,4 +1,5 @@
 library(BioCro)
+library(BioCroWater)
 library(DEoptim)
 
 # Cost function
@@ -6,9 +7,9 @@ source('obj_function.R')
 source('set_modules_for_soil_water.R')
 
 # Names of parameters being fit
-#arg_names <- c('alphaLeaf','alphaRoot','alphaStem','betaLeaf','betaRoot','betaStem',
-#               'rateSeneLeaf','rateSeneStem','alphaSeneLeaf','betaSeneLeaf',
-#               'alphaSeneStem','betaSeneStem','alphaShell','betaShell') 
+arg_names <- c('alphaLeaf','alphaRoot','alphaStem','betaLeaf','betaRoot','betaStem',
+               'rateSeneLeaf','rateSeneStem','alphaSeneLeaf','betaSeneLeaf',
+               'alphaSeneStem','betaSeneStem','alphaShell','betaShell','phi2') 
 
 # years, sowing dates, and harvesting dates of growing seasons being fit to
 # optimization uses these two years as Matthews et al (2022). 
@@ -31,6 +32,12 @@ soybean_steadystate_modules0 = set_direct_modules()
 soybean_derivative_modules0  = set_differential_modules() 
 soybean_initial_state0       = set_init_values() 
 soybean_parameters0          = set_parameters() 
+soybean_parameters0$kd = soybean_parameters0$k_diffuse
+
+#soybean_steadystate_modules0 = soybean$direct_modules 
+#soybean_derivative_modules0  = soybean$differential_modules 
+#soybean_initial_state0       = soybean$initial_values 
+#soybean_parameters0          = soybean$parameters 
 
 
 soybean_solver_params=soybean$ode_solver
@@ -46,8 +53,8 @@ for (i in 1:length(year)) {
   sd.ind <- which(weather$doy == sow.date[i])[1]
   hd.ind <- which(weather$doy == harv.date[i])[24]
   
-  weather.growingseason <- weather[sd.ind:hd.ind,]
-  weather.growingseason$time_zone_offset = -6
+  weather_growing_season <- weather[sd.ind:hd.ind,]
+  weather_growing_season$time_zone_offset = -6
   
 #calculate CTL for diagnostic purposes
   ctl[[i]] <- run_biocro(
@@ -61,7 +68,7 @@ for (i in 1:length(year)) {
 
   soybean_optsolver[[i]] <- partial_run_biocro(soybean_initial_state0, 
  					       soybean_parameters0, 
-					       weather.growingseason,
+					       weather_growing_season,
                                                soybean_steadystate_modules0,
 					       soybean_derivative_modules0, 
                                                soybean_solver_params,arg_names)
@@ -81,7 +88,7 @@ for (i in 1:length(year)) {
   
   RootVals[[i]] <- data.frame("DOY"=ExpBiomass[[i]]$DOY[5], "Root"=0.17*sum(ExpBiomass[[i]][5,2:4])) # See Ordonez et al. 2020, https://doi.org/10.1016/j.eja.2020.126130
   
-  numrows[i] <- nrow(weather.growingseason)
+  numrows[i] <- nrow(weather_growing_season)
   invwts <- ExpBiomass.std[[i]]
   #this weight is to put importance based on std
   #the larger the error bar is, the less the weight it has
@@ -101,14 +108,16 @@ upperlim<-c(ul,ul,ul,
             0,0,0,
             0.0125,.005,
             ul,0,ul,0,
-            ul,0)
+            ul,0,3.0)
 
 # parameter lower limit
 lowerlim<-c(0,0,0,
             ll,ll,ll,
             0,0,
             0,ll,0,ll,
-            0,ll)
+            0,ll,0.5)
+
+if(length(arg_names) != length(upperlim)) stop("number of vars does not match the number of bounds")
 
 # cost function
 cost_func <- function(x){
@@ -123,7 +132,7 @@ set.seed(rng.seed)
 # initialize parameters being fitted as randome values from a uniform distribution
 opt_pars <- runif(length(arg_names), min = lowerlim, max = upperlim)
 # maximum number of iterations
-max.iter <- 1000
+max.iter <- 2000
 # number of cores for parallelization
 # you probably should pick a number less than the total cores on your machine
 nc = 8
@@ -137,4 +146,4 @@ optim_result<-DEoptim(fn=cost_func, lower=lowerlim, upper = upperlim,
                      packages=c('BioCro'),parVar=parVars,cluster=cl))
 
 #save the optimized parameters to a file, which will be used for plotting later
-saveRDS(optim_result,'opt_results/opt_result_soil_water_r1.rds')
+saveRDS(optim_result,'opt_results/opt_result_new_water_v1.rds')
