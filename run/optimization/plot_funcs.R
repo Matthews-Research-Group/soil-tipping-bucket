@@ -11,8 +11,8 @@ plot_all_tissues <- function(res, year, biomass, biomass.std) {
   col.palette.muted <- c("#332288", "#117733", "#999933", "#882255","#EE3377")
   
   size.title <- 12
-  size.axislabel <-10
-  size.axis <- 10
+  size.axislabel <-16
+  size.axis <- 12
   size.legend <- 12
   
   f <- ggplot() + theme_classic()
@@ -82,7 +82,7 @@ plot_all_tissues_TWO <- function(res1,res2, year, biomass, biomass.std) {
 
 plot_litters <- function(res, year, biomass,biomass.std) {
 
-  r <- reshape2::melt(res[, c("time","LeafLitter","StemLitter")], id.vars="time")
+  r <- reshape2::melt(res[, c("time","LeafLitter","StemLitter","TotalLitter")], id.vars="time")
   r.exp <- reshape2::melt(biomass[, c("DOY", "CumLitter")], id.vars = "DOY")
   r.exp.std <- reshape2::melt(biomass.std[, c("DOY", "CumLitter")], id.vars = "DOY")
   r.exp.std$ymin<-r.exp$value-r.exp.std$value
@@ -112,8 +112,8 @@ plot_litters <- function(res, year, biomass,biomass.std) {
                  panel.grid.minor = element_blank(), panel.background = element_rect(fill = "transparent",colour = NA),
                  plot.background = element_rect(fill = "transparent", colour = NA))
   f <- f + guides(colour = guide_legend(override.aes = list(size=2)))
-  f <- f + scale_fill_manual(values = c("LeafLitter" = col.palette.muted[2],"StemLitter" = col.palette.muted[3],"CumLitter"="red"), guide = FALSE)
-  f <- f + scale_colour_manual(values = c("LeafLitter" = col.palette.muted[2],"StemLitter" = col.palette.muted[3],"OBS-TotalLitter"="red"), labels=c('LeafLitter','StemLitter','OBS-TotalLitter'))
+  f <- f + scale_fill_manual(values = c("LeafLitter" = col.palette.muted[2],"StemLitter" = col.palette.muted[3],"TotalLitter"="red","CumLitter"="red"), guide = FALSE)
+  f <- f + scale_colour_manual(values = c("LeafLitter" = col.palette.muted[2],"StemLitter" = col.palette.muted[3],"TotalLitter"="red"), labels=c('LeafLitter','StemLitter','TotalLitter'))
 
   return(f)
 }
