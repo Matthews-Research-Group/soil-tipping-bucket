@@ -8,16 +8,18 @@ library(gridExtra)
 source('set_modules_for_soil_water.R')
 source('plot_funcs.R')
 #only need to change this name. 
-opt_result_name = 'control'
+opt_result_name = 'new_water_v2'
+use_new_water = TRUE 
 #
 # Cost function
-#arg_names <- c('alphaLeaf','alphaRoot','alphaStem','betaLeaf','betaRoot','betaStem',
-#               'rateSeneLeaf','rateSeneStem','alphaSeneLeaf','betaSeneLeaf',
-#               'alphaSeneStem','betaSeneStem','alphaShell','betaShell') 
-#new_par = readRDS(paste0('opt_results/optim_result_DEoptim_',opt_result_name,'.rds'))
-#new_par = new_par$optim$bestmem
-#names(new_par) = arg_names
-#print(cbind(arg_names,new_par))
+arg_names <- c('alphaLeaf','alphaRoot','alphaStem','betaLeaf','betaRoot','betaStem',
+               'rateSeneLeaf','rateSeneStem','alphaSeneLeaf','betaSeneLeaf',
+               'alphaSeneStem','betaSeneStem','alphaShell','betaShell') 
+#new_par = read.table('opt_results/opt_result_new_water_v1.csv')
+new_par = readRDS(paste0('opt_results/opt_result_',opt_result_name,'.rds'))
+new_par = new_par$optim$bestmem
+names(new_par) = arg_names
+print(new_par)
 #soybean_parameters0          = soybean$parameters
 #print(cbind(new_par,r=soybean_parameters0[arg_names]))
 
@@ -37,11 +39,18 @@ RootVals <- list()
 weights <- list()
 numrows <- vector()
 
-soybean_steadystate_modules0 = set_direct_modules() 
-soybean_derivative_modules0  = set_differential_modules() 
-soybean_initial_state0       = set_init_values() 
-soybean_parameters0          = set_parameters() 
-soybean_parameters0$kd = soybean_parameters0$k_diffuse
+if(use_new_water){
+  soybean_steadystate_modules0 = set_direct_modules() 
+  soybean_derivative_modules0  = set_differential_modules() 
+  soybean_initial_state0       = set_init_values() 
+  soybean_parameters0          = set_parameters() 
+  soybean_parameters0$kd = soybean_parameters0$k_diffuse
+}else{
+  soybean_steadystate_modules0 = soybean$direct_modules 
+  soybean_derivative_modules0  = soybean$differential_modules 
+  soybean_initial_state0       = soybean$initial_values 
+  soybean_parameters0          = soybean$parameters 
+}
 
 soybean_solver_params=soybean$ode_solver
 soybean_solver_params$type="homemade_euler" #comment this out to use rkck54 solver
@@ -68,22 +77,20 @@ for (i in 1:length(years)) {
     soybean$ode_solver
   )
   
-#  soybean_solver[[i]] <- partial_run_biocro(soybean_initial_state0, 
-# 					       soybean_parameters0, 
-#					       weather_growing_season,
-#                                               soybean_steadystate_modules0,
-#					       soybean_derivative_modules0, 
-#                                               soybean_solver_params,arg_names)
-#  
-#  soybean_solver_i = soybean_solver[[i]] 
-#  results[[i]] <- soybean_solver_i(new_par)
-  results[[i]] <- run_biocro(soybean_initial_state0, 
- 			                       soybean_parameters0, 
-			                       weather_growing_season,
-                             soybean_steadystate_modules0,
-			                       soybean_derivative_modules0, 
-                             soybean_solver_params)
-
+  soybean_solver[[i]] <- partial_run_biocro(soybean_initial_state0, 
+ 					       soybean_parameters0, 
+					       weather_growing_season,
+                                               soybean_steadystate_modules0,
+					       soybean_derivative_modules0, 
+                                               soybean_solver_params,arg_names)
+  
+  soybean_solver_i = soybean_solver[[i]] 
+  results[[i]] <- soybean_solver_i(new_par)
+#  results[[i]] <- run_biocro(soybean_initial_state0, 
+# 			                       soybean_parameters0, 
+#			                       weather_growing_season,
+#                             soybean_steadystate_modules0,
+#			                       soybean_derivative_modules0, 
   ExpBiomass[[i]] <- read.csv(file=paste0('Data/biomasses_with_seed/',yr,'_ambient_biomass.csv'))
   colnames(ExpBiomass[[i]])<-c("DOY","Leaf","Stem","Shell0","Seed","Litter","CumLitter")
   Shell = ExpBiomass[[i]]$Shell0 - ExpBiomass[[i]]$Seed
@@ -107,10 +114,14 @@ plot_list = list()
 plot_list_litter = list()
 for (i in 1:length(years)){
 	yr = years[i]
-	FigA <- plot_all_tissues_TWO(results_CTL[[i]],results[[i]], yr, ExpBiomass[[i]], ExpBiomass.std[[i]])
+#	FigA <- plot_all_tissues_TWO(results_CTL[[i]],results[[i]], yr, ExpBiomass[[i]], ExpBiomass.std[[i]])
+	FigA <- plot_all_tissues(results[[i]], yr, ExpBiomass[[i]], ExpBiomass.std[[i]])
 	plot_list[[i]] = FigA
 
-	FigB <- plot_litters(results_CTL[[i]],yr, ExpBiomass[[i]], ExpBiomass.std[[i]])
+        
+        results[[i]]$TotalLitter = results[[i]]$LeafLitter + results[[i]]$StemLitter
+
+	FigB <- plot_litters(results[[i]],yr, ExpBiomass[[i]], ExpBiomass.std[[i]])
 	plot_list_litter[[i]] = FigB
 }
 
