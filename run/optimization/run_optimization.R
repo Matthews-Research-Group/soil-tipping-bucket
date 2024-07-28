@@ -9,13 +9,13 @@ source('set_modules_for_soil_water.R')
 # Names of parameters being fit
 arg_names <- c('alphaLeaf','alphaRoot','alphaStem','betaLeaf','betaRoot','betaStem',
                'rateSeneLeaf','rateSeneStem','alphaSeneLeaf','betaSeneLeaf',
-               'alphaSeneStem','betaSeneStem','alphaShell','betaShell','phi2') 
+               'alphaSeneStem','betaSeneStem','alphaShell','betaShell') 
 
 # years, sowing dates, and harvesting dates of growing seasons being fit to
 # optimization uses these two years as Matthews et al (2022). 
 # The other two years (2004&2006) can be considered as validation sets
-year <- c('2002', '2005')
-sow.date <- c(152, 148)
+year      <- c('2002', '2005')
+sow.date  <- c(152, 148)
 harv.date <- c(288, 270)
 
 ## Initialize variables for the cost function
@@ -74,7 +74,7 @@ for (i in 1:length(year)) {
                                                soybean_solver_params,arg_names)
   
   ExpBiomass[[i]] <- read.csv(file=paste0('Data/biomasses_with_seed/',yr,'_ambient_biomass.csv'))
-  colnames(ExpBiomass[[i]])<-c("DOY","Leaf","Stem","Shell0","Seed")
+  colnames(ExpBiomass[[i]])<-c("DOY","Leaf","Stem","Shell0","Seed","Litter","CumLitter")
   Shell = ExpBiomass[[i]]$Shell0 - ExpBiomass[[i]]$Seed
 #  Shell[which.max(Shell):length(Shell)] = max(Shell) #make Shell not decline
   ExpBiomass[[i]]$Shell = Shell 
@@ -82,7 +82,7 @@ for (i in 1:length(year)) {
   ExpBiomass[[i]]$Shell0 = NULL
   
   ExpBiomass.std[[i]] <- read.csv(file=paste0('Data/biomasses_with_seed/',yr,'_ambient_biomass_std.csv'))
-  colnames(ExpBiomass.std[[i]])<-c("DOY","Leaf","Stem","Shell0","Seed")
+  colnames(ExpBiomass.std[[i]])<-c("DOY","Leaf","Stem","Shell0","Seed","Litter","CumLitter")
   ExpBiomass.std[[i]]$Shell = sqrt((ExpBiomass.std[[i]]$Shell0)^2 + (ExpBiomass.std[[i]]$Seed)^2)
   ExpBiomass.std[[i]]$Shell0 = NULL
   
@@ -97,31 +97,36 @@ for (i in 1:length(year)) {
 
 #these weights are picked without specific reasons
 #the current values work fine for my case
-wts2 <- data.frame("Stem" = 1, "Leaf" = 1, "Shell" = 1, "Seed" = 1,"Root" = 0.01)
+wts_on_errors <- data.frame("Stem" = 5, "Leaf" = 5, "Shell" = 1, "Seed" = 1,"TotalLitter" = 0.5,"Root" = 0.01)
 
 ## Optimization settings
 ul = 50 
 ll = -50
 
 # parameter upper limit
+#upperlim<-c(ul,ul,ul,
+#            0,0,0,
+#            0.0125,.005,
+#            ul,0,ul,0,
+#            ul,0,3.0)
 upperlim<-c(ul,ul,ul,
             0,0,0,
             0.0125,.005,
             ul,0,ul,0,
-            ul,0,3.0)
+            ul,0)
 
 # parameter lower limit
 lowerlim<-c(0,0,0,
             ll,ll,ll,
             0,0,
             0,ll,0,ll,
-            0,ll,0.5)
+            0,ll)
 
 if(length(arg_names) != length(upperlim)) stop("number of vars does not match the number of bounds")
 
 # cost function
 cost_func <- function(x){
-  multiyear_BioCro_optim_obj(x, soybean_optsolver, ExpBiomass, numrows, weights, wts2, RootVals)
+  multiyear_BioCro_optim_obj(x, soybean_optsolver, ExpBiomass, numrows, weights, wts_on_errors, RootVals)
 }
 
 
@@ -132,18 +137,21 @@ set.seed(rng.seed)
 # initialize parameters being fitted as randome values from a uniform distribution
 opt_pars <- runif(length(arg_names), min = lowerlim, max = upperlim)
 # maximum number of iterations
-max.iter <- 2000
+max.iter <- 1000
 # number of cores for parallelization
 # you probably should pick a number less than the total cores on your machine
 nc = 8
 cl <- makeCluster(nc)
 
 # Call DEoptim function to run optimization
-parVars <- c('multiyear_BioCro_optim_obj','soybean_optsolver','ExpBiomass','numrows','weights','wts2','RootVals')
+parVars <- c('multiyear_BioCro_optim_obj','soybean_optsolver','ExpBiomass','numrows','weights','wts_on_errors','RootVals')
 clusterExport(cl, parVars,envir=environment())
 optim_result<-DEoptim(fn=cost_func, lower=lowerlim, upper = upperlim, 
 		     control=list(itermax=max.iter,parallelType=1,
                      packages=c('BioCro'),parVar=parVars,cluster=cl))
+#optim_result<-DEoptim(fn=cost_func, lower=lowerlim, upper = upperlim, 
+#		     control=list(itermax=max.iter,parallelType=0,
+#                     packages=c('BioCro')))
 
 #save the optimized parameters to a file, which will be used for plotting later
-saveRDS(optim_result,'opt_results/opt_result_new_water_v1.rds')
+saveRDS(optim_result,'opt_results/opt_result_new_water_v6.rds')

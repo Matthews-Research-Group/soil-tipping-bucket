@@ -52,16 +52,17 @@ multiyear_BioCro_optim_obj <- function(optim_params, biocro.fun, ExpData, num_ro
       Pred$Leaf <- result$Leaf[doy_inds]
       Pred$Shell  <- result$Shell[doy_inds]
       Pred$Seed <- result$Grain[doy_inds]
+      Pred$TotalLitter <- result$LeafLitter[doy_inds] + result$StemLitter[doy_inds]
 
       doy_inds.Root <- which(result$time %in% RootVals[[i]]$DOY)
       Pred.Root <- result$Root[doy_inds.Root]
-
 
       # factor to scale experimental and simulated results between 0 and ~1 for all components
       scale.leaf <- max(TrueValues$Leaf)
       scale.stem <- max(TrueValues$Stem)
       scale.shell  <- max(TrueValues$Shell)
       scale.seed <- max(TrueValues$Seed)
+      scale.litter <- max(TrueValues$CumLitter)
       scale.Root <- max(RootVals[[i]]$Root)
 
       # weights
@@ -74,9 +75,11 @@ multiyear_BioCro_optim_obj <- function(optim_params, biocro.fun, ExpData, num_ro
       err.seed <- sum(wts$Seed*(((Pred$Seed-TrueValues$Seed)/scale.seed)^2))/length(Pred$Seed)
       err.Root <- sum(((Pred.Root-RootVals[[i]]$Root)/scale.Root)^2)/length(Pred.Root)
 
+      err.litter <- sum(wts$CumLitter*(((Pred$TotalLitter-TrueValues$CumLitter)/scale.litter)^2))/length(Pred$TotalLitter)
+
       cost <- (wts2$Stem*err.stem + wts2$Shell*err.shell + 
                wts2$Leaf*err.leaf + wts2$Root*err.Root +
-               wts2$Seed*err.seed)
+               wts2$Seed*err.seed + wts2$TotalLitter* err.litter)
 
       cost <- round(100 * cost,2) / length(biocro.fun)
       cost.avg <- cost.avg + cost + penalty
