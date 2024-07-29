@@ -11,6 +11,16 @@ arg_names <- c('alphaLeaf','alphaRoot','alphaStem','betaLeaf','betaRoot','betaSt
                'rateSeneLeaf','rateSeneStem','alphaSeneLeaf','betaSeneLeaf',
                'alphaSeneStem','betaSeneStem','alphaShell','betaShell') 
 
+#these weights are picked without specific reasons
+#the current values work fine for my case
+wts_on_errors <- data.frame("Stem" = 5, "Leaf" = 5, "Shell" = 1, "Seed" = 5,"TotalLitter" = 1,"Root" = 0.1)
+
+output_filename = "opt_result_new_water_v9.rds"
+
+print(arg_names)
+print(wts_on_errors)
+print(output_filename)
+
 # years, sowing dates, and harvesting dates of growing seasons being fit to
 # optimization uses these two years as Matthews et al (2022). 
 # The other two years (2004&2006) can be considered as validation sets
@@ -86,18 +96,19 @@ for (i in 1:length(year)) {
   ExpBiomass.std[[i]]$Shell = sqrt((ExpBiomass.std[[i]]$Shell0)^2 + (ExpBiomass.std[[i]]$Seed)^2)
   ExpBiomass.std[[i]]$Shell0 = NULL
   
-  RootVals[[i]] <- data.frame("DOY"=ExpBiomass[[i]]$DOY[5], "Root"=0.17*sum(ExpBiomass[[i]][5,2:4])) # See Ordonez et al. 2020, https://doi.org/10.1016/j.eja.2020.126130
+#why use the 5th DOY?
+  row_to_use = 5
+  Root_estimate = 0.17*sum(ExpBiomass[[i]][row_to_use,c('Leaf','Stem','Seed','Shell')])
+  RootVals[[i]] <- data.frame("DOY"=ExpBiomass[[i]]$DOY[row_to_use], "Root"=Root_estimate) # See Ordonez et al. 2020, https://doi.org/10.1016/j.eja.2020.126130
   
   numrows[i] <- nrow(weather_growing_season)
   invwts <- ExpBiomass.std[[i]]
   #this weight is to put importance based on std
   #the larger the error bar is, the less the weight it has
   weights[[i]] <- log(1/(invwts[,2:ncol(invwts)]+1e-5))
+
 }
 
-#these weights are picked without specific reasons
-#the current values work fine for my case
-wts_on_errors <- data.frame("Stem" = 5, "Leaf" = 5, "Shell" = 1, "Seed" = 1,"TotalLitter" = 0.5,"Root" = 0.01)
 
 ## Optimization settings
 ul = 50 
@@ -154,4 +165,4 @@ optim_result<-DEoptim(fn=cost_func, lower=lowerlim, upper = upperlim,
 #                     packages=c('BioCro')))
 
 #save the optimized parameters to a file, which will be used for plotting later
-saveRDS(optim_result,'opt_results/opt_result_new_water_v6.rds')
+saveRDS(optim_result,paste0('opt_results/',output_filename))
