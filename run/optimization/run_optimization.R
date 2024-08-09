@@ -6,16 +6,32 @@ library(DEoptim)
 source('obj_function.R')
 source('set_modules_for_soil_water.R')
 
+use_pre_opt_vars = FALSE 
 # Names of parameters being fit
-arg_names <- c('alphaLeaf','alphaRoot','alphaStem','betaLeaf','betaRoot','betaStem',
-               'rateSeneLeaf','rateSeneStem','alphaSeneLeaf','betaSeneLeaf',
-               'alphaSeneStem','betaSeneStem','alphaShell','betaShell') 
+if(use_pre_opt_vars){
+  pre_arg_names <- c('alphaLeaf','alphaRoot','alphaStem','betaLeaf','betaRoot','betaStem',
+                 'rateSeneLeaf','rateSeneStem','alphaSeneLeaf','betaSeneLeaf',
+                 'alphaSeneStem','betaSeneStem','alphaShell','betaShell') 
+  
+  arg_names <- c('phi2') 
+  
+  pre_par = readRDS(paste0('opt_results/opt_result_old_water_opt_v1.rds'))
+  pre_par = pre_par$optim$bestmem
+}else{
+  arg_names_all <- c('alphaLeaf','alphaRoot','alphaStem','betaLeaf','betaRoot','betaStem',
+                 'rateSeneLeaf','rateSeneStem','alphaSeneLeaf','betaSeneLeaf',
+                 'alphaSeneStem','betaSeneStem','alphaShell','betaShell','mrc1','mrc2')
+  arg_names <- c('alphaLeaf','alphaStem','betaLeaf','betaStem',
+                 'rateSeneLeaf','rateSeneStem','alphaSeneLeaf','betaSeneLeaf',
+                 'alphaSeneStem','betaSeneStem','alphaShell','betaShell','mrc2')
+}
 
 #these weights are picked without specific reasons
 #the current values work fine for my case
-wts_on_errors <- data.frame("Stem" = 5, "Leaf" = 5, "Shell" = 1, "Seed" = 5,"TotalLitter" = 1,"Root" = 0.1)
+wts_on_errors <- data.frame("Stem" = 1, "Leaf" = 2, "Shell" = 0.5, "Seed" = 1,"TotalLitter" = 0.1,"Root" = 0.1)
 
-output_filename = "opt_result_new_water_v9.rds"
+use_new_water   = FALSE 
+output_filename = "opt_result_old_water_v11.rds"
 
 print(arg_names)
 print(wts_on_errors)
@@ -38,16 +54,25 @@ numrows <- vector()
 
 ctl <- list()
 
-soybean_steadystate_modules0 = set_direct_modules() 
-soybean_derivative_modules0  = set_differential_modules() 
-soybean_initial_state0       = set_init_values() 
-soybean_parameters0          = set_parameters() 
-soybean_parameters0$kd = soybean_parameters0$k_diffuse
+if(use_new_water){
+  soybean_steadystate_modules0 = set_direct_modules() 
+  soybean_derivative_modules0  = set_differential_modules() 
+  soybean_initial_state0       = set_init_values() 
+  soybean_parameters0          = set_parameters() 
+  soybean_parameters0$kd = soybean_parameters0$k_diffuse
+}else{
+  soybean_steadystate_modules0 = soybean$direct_modules 
+  soybean_derivative_modules0  = soybean$differential_modules 
+  soybean_initial_state0       = soybean$initial_values 
+  soybean_parameters0          = soybean$parameters 
+}
 
-#soybean_steadystate_modules0 = soybean$direct_modules 
-#soybean_derivative_modules0  = soybean$differential_modules 
-#soybean_initial_state0       = soybean$initial_values 
-#soybean_parameters0          = soybean$parameters 
+#pre-define the growth_respiration_fraction to reduce Assimilation
+#soybean_parameters0$growth_respiration_fraction = 0.25 
+
+if(use_pre_opt_vars){
+  soybean_parameters0[pre_arg_names] = pre_par 
+}
 
 
 soybean_solver_params=soybean$ode_solver
@@ -86,7 +111,9 @@ for (i in 1:length(year)) {
   ExpBiomass[[i]] <- read.csv(file=paste0('Data/biomasses_with_seed/',yr,'_ambient_biomass.csv'))
   colnames(ExpBiomass[[i]])<-c("DOY","Leaf","Stem","Shell0","Seed","Litter","CumLitter")
   Shell = ExpBiomass[[i]]$Shell0 - ExpBiomass[[i]]$Seed
-#  Shell[which.max(Shell):length(Shell)] = max(Shell) #make Shell not decline
+#make Shell not decline. When shell reaches peak, we assume it does not decline after 
+#because in BioCro, we do not have shell senescence 
+  Shell[which.max(Shell):length(Shell)] = max(Shell) 
   ExpBiomass[[i]]$Shell = Shell 
 
   ExpBiomass[[i]]$Shell0 = NULL
@@ -115,23 +142,21 @@ ul = 50
 ll = -50
 
 # parameter upper limit
-#upperlim<-c(ul,ul,ul,
-#            0,0,0,
-#            0.0125,.005,
-#            ul,0,ul,0,
-#            ul,0,3.0)
-upperlim<-c(ul,ul,ul,
+upperlim_all<-c(ul,ul,ul,
             0,0,0,
             0.0125,.005,
             ul,0,ul,0,
-            ul,0)
+            ul,0,0.08,0.075)
 
 # parameter lower limit
-lowerlim<-c(0,0,0,
+lowerlim_all<-c(0,0,0,
             ll,ll,ll,
             0,0,
             0,ll,0,ll,
-            0,ll)
+            0,ll,8e-4,0.0025)
+
+upperlim = upperlim_all[match(arg_names,arg_names_all)]
+lowerlim = lowerlim_all[match(arg_names,arg_names_all)]
 
 if(length(arg_names) != length(upperlim)) stop("number of vars does not match the number of bounds")
 
@@ -148,7 +173,7 @@ set.seed(rng.seed)
 # initialize parameters being fitted as randome values from a uniform distribution
 opt_pars <- runif(length(arg_names), min = lowerlim, max = upperlim)
 # maximum number of iterations
-max.iter <- 1000
+max.iter <- 2000
 # number of cores for parallelization
 # you probably should pick a number less than the total cores on your machine
 nc = 8
